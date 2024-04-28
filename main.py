@@ -95,15 +95,12 @@ def selattack(att, P1, P2):
     return P1, P2
 
 def gamecheck(P1, P2):
-    if P2.PH <= 0:
-        P1.xp = P1.xp + P2.xp
-        if P1.xp >= P1.level*10:
-            P1.xp -= P1.level*10
-            P1.level += 1
-        P1.PH = 100
-        return True
-    else: 
-        return False
+    P1.xp = P1.xp + P2.xp
+    if P1.xp >= P1.level*10:
+        P1.xp -= P1.level*10
+        P1.level += 1
+    P1.PH = 100
+    return P1
 
 def loadimage(image, height, width):
     return pygame.transform.scale(pygame.image.load("data/images/" + image), (height, width))
@@ -146,6 +143,11 @@ if __name__=="__main__":
     bow = loadimage("bow.png", 64, 64)
     arrow = loadimage("arrow.png", 64, 64)
     shield = loadimage("shield.png", 128, 128)
+    shield_sound = pygame.mixer.Sound("data/sound/shield.wav")
+    damage_sound = pygame.mixer.Sound("data/sound/damage.wav")
+    pygame.mixer.music.load("data/sound/elsemusicloop.wav")
+    pygame.mixer.music.play(-1,0.0)
+    pygame.mixer.music.set_volume(0.3)
     bg = arena1_background
     playanimation = False
     animation_type = 0
@@ -243,6 +245,8 @@ if __name__=="__main__":
                             special_image = grassball
                         Player = Player(klasse, idle_image1, idle_image2, ball1_image, ball2_image, ball3_image, sword_image, special_image, Attacknames)
                         Enemy = Enemy("fire", 60, lama_idle_1, lama_idle_2)
+                        pygame.mixer.music.load("data/sound/fightmusicloop.wav")
+                        pygame.mixer.music.play(-1,0.0)
             pygame.draw.rect(screen, (100,255,0), (charselecterstringcords[charselectervar], 300, 128, 128))
             if charselectervar == 0:
                 screen.blit(momsprite1, (200,300))
@@ -285,6 +289,7 @@ if __name__=="__main__":
                         if character_mov_back == False:
                             Player.X += 16
                             if Player.X >= Enemy.X-128:
+                                pygame.mixer.Sound.play(damage_sound)
                                 character_mov_back = True
                         else:
                             Player.X -= 16
@@ -309,6 +314,7 @@ if __name__=="__main__":
                     if objekt_show == True:
                         objektX += 16
                         if objektX >= Enemy.X:
+                            pygame.mixer.Sound.play(damage_sound)
                             ticker = 360
                 elif Attboard.counter == 2:
                     if ticker <= 5:
@@ -327,6 +333,7 @@ if __name__=="__main__":
                     if objekt_show == True:
                         objektX += 16
                         if objektX >= Enemy.X:
+                            pygame.mixer.Sound.play(damage_sound)
                             ticker = 360
                 elif Attboard.counter == 3:
                     playerspr = Player.idle_image1
@@ -335,6 +342,7 @@ if __name__=="__main__":
                     elif ticker <=40:
                         screen.blit(shield, (Player.X, Player.Y))
                     else:
+                        pygame.mixer.Sound.play(shield_sound)
                         ticker = 360
             if animation_type == 1:
                 enemyspr = Enemy.idle_image1
@@ -345,6 +353,7 @@ if __name__=="__main__":
                     elif ticker <=40:
                         screen.blit(shield, (Enemy.X, Enemy.Y))
                     else:
+                        pygame.mixer.Sound.play(shield_sound)
                         ticker = 360
                 else:
                     character_mov = True
@@ -352,6 +361,7 @@ if __name__=="__main__":
                         if character_mov_back == False:
                             Enemy.X -= 16
                             if Enemy.X <= Player.X+100:
+                                pygame.mixer.Sound.play(damage_sound)
                                 character_mov_back = True
                         else:
                             Enemy.X += 16
@@ -422,18 +432,18 @@ if __name__=="__main__":
                                     playanimation = True
                                     ticker = 1
                                     animation_type = 0
-                if Player.PH <= 0 :
-                    momfight = False
-                    won = False
-                elif Enemy.PH <= 0:
-                    momfight = False
-                    won = True
                 pygame.display.flip()
                 clock.tick(60)
                 if ticker == 60:
                     ticker = 0
                 else:
                     ticker += 1
+            if Player.PH < 1 :
+                momfight = False
+                won = False
+            elif Enemy.PH < 1:
+                momfight = False
+                won = True
         else:
             screen.blit(arena1_background, (0,0))
             for event in pygame.event.get():
