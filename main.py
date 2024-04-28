@@ -9,7 +9,7 @@ effektivclass = {
 }
 
 class Player():
-    def __init__(self, CharacterClass, idle_image1, idle_image2, ball1_image, ball2_image, ball3_image, sword_image, Attacknames):
+    def __init__(self, CharacterClass, idle_image1, idle_image2, ball1_image, ball2_image, ball3_image, sword_image, special_image, Attacknames):
         if not checkOk(CharacterClass):
             exit()
         self.PC = CharacterClass
@@ -22,6 +22,7 @@ class Player():
         self.ball_image2 = ball2_image
         self.ball_image3 = ball3_image
         self.sword_image = sword_image
+        self.special_image = special_image
         self.Defnse = 1
         self.X = 150
         self.Y = 400
@@ -144,6 +145,7 @@ if __name__=="__main__":
     waterball = loadimage("water_ball.png", 32, 32)
     bow = loadimage("bow.png", 64, 64)
     arrow = loadimage("arrow.png", 64, 64)
+    shield = loadimage("shield.png", 128, 128)
     bg = arena1_background
     playanimation = False
     animation_type = 0
@@ -159,6 +161,7 @@ if __name__=="__main__":
     won = False
     ticker = 0
     Attboard = Attboard()
+    attenemy = 0
     charselectervar = random.randint(0,2)
     charselecterstringcords = [200, 336, 472]
     textcharselect = my_font.render('Please Chose a Character', False, (255, 255, 255))
@@ -217,6 +220,7 @@ if __name__=="__main__":
                             ball2_image = water_ball_2
                             ball3_image = water_ball_3
                             sword_image = water_sword
+                            special_image = waterball
                         elif charselectervar == 1:
                             klasse = "fire"
                             Attacknames = ["Sword", "Arrow", "Fireball", "Shield"]
@@ -226,6 +230,7 @@ if __name__=="__main__":
                             ball2_image = fire_ball_2
                             ball3_image = fire_ball_3
                             sword_image = fire_sword
+                            special_image = fireball
                         else:
                             klasse = "plant"
                             Attacknames = ["Sword", "Arrow", "Dirtball", "Shield"]
@@ -235,7 +240,8 @@ if __name__=="__main__":
                             ball2_image = plant_ball_2
                             ball3_image = plant_ball_3
                             sword_image = plant_sword
-                        Player = Player(klasse, idle_image1, idle_image2, ball1_image, ball2_image, ball3_image, sword_image, Attacknames)
+                            special_image = grassball
+                        Player = Player(klasse, idle_image1, idle_image2, ball1_image, ball2_image, ball3_image, sword_image, special_image, Attacknames)
                         Enemy = Enemy("fire", 60, lama_idle_1, lama_idle_2)
             pygame.draw.rect(screen, (100,255,0), (charselecterstringcords[charselectervar], 300, 128, 128))
             if charselectervar == 0:
@@ -263,13 +269,13 @@ if __name__=="__main__":
             if animation_type == 0 :
                 enemyspr = Enemy.idle_image1
                 if Attboard.counter == 0:
-                    if ticker <= 10:
+                    if ticker <= 5:
                         playerspr = Player.idle_image1
-                    elif ticker <= 20:
+                    elif ticker <= 10:
                         playerspr = Player.ball_image1
-                    elif ticker <= 30:
+                    elif ticker <= 15:
                         playerspr = Player.ball_image2
-                    elif ticker <= 40:
+                    elif ticker <= 20:
                         playerspr = Player.ball_image3
                     else:
                         playerspr = Player.ball_image3
@@ -286,13 +292,13 @@ if __name__=="__main__":
                                 Player.X = 150
                                 ticker = 360
                 elif Attboard.counter == 1:
-                    if ticker <= 10:
+                    if ticker <= 5:
                         playerspr = Player.idle_image1
-                    elif ticker <= 20:
+                    elif ticker <= 10:
                         playerspr = Player.ball_image1
-                    elif ticker <= 30:
+                    elif ticker <= 15:
                         playerspr = Player.ball_image2
-                    elif ticker <= 40:
+                    elif ticker <= 20:
                         playerspr = Player.ball_image3
                     else:
                         playerspr = Player.ball_image3
@@ -304,6 +310,54 @@ if __name__=="__main__":
                         objektX += 16
                         if objektX >= Enemy.X:
                             ticker = 360
+                elif Attboard.counter == 2:
+                    if ticker <= 5:
+                        playerspr = Player.idle_image1
+                    elif ticker <= 10:
+                        playerspr = Player.ball_image1
+                    elif ticker <= 15:
+                        playerspr = Player.ball_image2
+                    elif ticker <= 20:
+                        playerspr = Player.ball_image3
+                    else:
+                        playerspr = Player.ball_image3
+                        screen.blit(Player.special_image, (objektX, Player.Y+25))
+                        objekt_show = True
+                        character_mov = True
+                    if objekt_show == True:
+                        objektX += 16
+                        if objektX >= Enemy.X:
+                            ticker = 360
+                elif Attboard.counter == 3:
+                    playerspr = Player.idle_image1
+                    if ticker <= 10:
+                        pass
+                    elif ticker <=40:
+                        screen.blit(shield, (Player.X, Player.Y))
+                    else:
+                        ticker = 360
+            if animation_type == 1:
+                enemyspr = Enemy.idle_image1
+                playerspr = Player.idle_image1
+                if attenemy == 3:
+                    if ticker <= 10:
+                        pass
+                    elif ticker <=40:
+                        screen.blit(shield, (Enemy.X, Enemy.Y))
+                    else:
+                        ticker = 360
+                else:
+                    character_mov = True
+                    if character_mov == True:
+                        if character_mov_back == False:
+                            Enemy.X -= 16
+                            if Enemy.X <= Player.X+100:
+                                character_mov_back = True
+                        else:
+                            Enemy.X += 16
+                            if Enemy.X >= 600:
+                                Enemy.X = 600
+                                ticker = 360
             for event in pygame.event.get():
                         if event.type == pygame.QUIT:
                             running = False
@@ -328,7 +382,8 @@ if __name__=="__main__":
                 Player, Enemy = selattack(Attboard.counter+1, Player, Enemy)
             elif animation_done == True and animation_type == 1:
                 animation_done = False
-                Enemy, Player = selattack(random.randint(1,4), Enemy, Player)
+                attenemy = random.randint(0,3)
+                Enemy, Player = selattack((attenemy+1), Enemy, Player)
             else:
                 pygame.display.set_caption("Hypermux -Fight")
                 screen.blit(bg, (0,0))
