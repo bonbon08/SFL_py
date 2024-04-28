@@ -9,7 +9,7 @@ effektivclass = {
 }
 
 class Player():
-    def __init__(self, CharacterClass, idle_image1, idle_image2):
+    def __init__(self, CharacterClass, idle_image1, idle_image2, Attacknames):
         if not checkOk(CharacterClass):
             exit()
         self.PC = CharacterClass
@@ -19,8 +19,9 @@ class Player():
         self.idle_image1 = idle_image1
         self.idle_image2 = idle_image2
         self.Defnse = 1
-        self.X = 200
-        self.Y = 200
+        self.X = 150
+        self.Y = 400
+        self.Attacknames = Attacknames
 
 class Enemy():
     def __init__(self, CharacterClass, maxHP, idle_image1, idle_image2):
@@ -33,8 +34,13 @@ class Enemy():
         self.idle_image2 = idle_image2
         self.PH = random.randint(50, maxHP)
         self.Defnse = 1
-        self.X = 200
-        self.Y = 200
+        self.X = 600
+        self.Y = 400
+
+class Attboard():
+    def __init__(self):
+        self.counter = 0
+        self.posses = [50, 100, 150, 200]
 
 def checkOk(Pclass):
     if Pclass in avclassses:
@@ -81,7 +87,7 @@ def selattack(att, P1, P2):
         P2.PH = calcdamage(mult, P1A, P2H, Defnse)
     else:
         P1.Defnse = calcDefnse(P1.PH, P1.Defnse)
-    return gamecheck(P1, P2)
+    return P1, P2
 
 def gamecheck(P1, P2):
     if P2.PH <= 0:
@@ -124,7 +130,9 @@ if __name__=="__main__":
     selectchar = True
     momfight = False
     running = True
+    won = False
     ticker = 0
+    Attboard = Attboard()
     charselectervar = random.randint(0,2)
     charselecterstringcords = [200, 336, 472]
     textcharselect = my_font.render('Please Chose a Character', False, (255, 255, 255))
@@ -176,17 +184,20 @@ if __name__=="__main__":
                         momfight = True
                         if charselectervar == 0:
                             klasse = "water"
+                            Attacknames = ["Sword", "Arrow", "Waterblob", "Shield"]
                             idle_image1 = water_idle_1
                             idle_image2 = water_idle_2
                         elif charselectervar == 1:
                             klasse = "fire"
+                            Attacknames = ["Sword", "Arrow", "Fireball", "Shield"]
                             idle_image1 = fire_idle_1
                             idle_image2 = fire_idle_2
                         else:
                             klasse = "plant"
+                            Attacknames = ["Sword", "Arrow", "Dirtball", "Shield"]
                             idle_image1 = plant_idle_1
                             idle_image2 = plant_idle_2
-                        Player = Player(klasse, idle_image1, idle_image2)
+                        Player = Player(klasse, idle_image1, idle_image2, Attacknames)
                         Enemy = Enemy("fire", 60, lama_idle_1, lama_idle_2)
             pygame.draw.rect(screen, (100,255,0), (charselecterstringcords[charselectervar], 300, 128, 128))
             if charselectervar == 0:
@@ -211,22 +222,46 @@ if __name__=="__main__":
         elif momfight:
             pygame.display.set_caption("Hypermux -Fight")
             screen.blit(bg, (0,0))
+            pygame.draw.rect(screen, (0,92,152), (50,50,300,200))
+            pygame.draw.rect(screen, (70,172,0), (50, Attboard.posses[Attboard.counter], 300,50))
+            for i in range(0,4):
+                text  = my_font.render(Player.Attacknames[i], False, (255, 255, 255))
+                screen.blit(text, (50, Attboard.posses[i]))
             if ticker > 30:
                 playerspr = Player.idle_image2
                 enemyspr = Enemy.idle_image2
             else:
                 playerspr = Player.idle_image1
-                enemyspr = Enemy.idle_image2
+                enemyspr = Enemy.idle_image1
+            screen.blit(enemyspr, (Enemy.X, Enemy.Y))
+            screen.blit(playerspr, (Player.X, Player.Y))
+            text  = my_font.render(str(Player.PH) + " HP", False, (204, 100, 30))
+            screen.blit(text, (180, 300 ))
+            text  = my_font.render(str(Enemy.PH) + " HP", False, (204, 100, 30))
+            screen.blit(text, (600, 300 ))
             for event in pygame.event.get():
                         if event.type == pygame.QUIT:
                             running = False
                         elif event.type == pygame.KEYDOWN:
                             if event.key == pygame.K_UP:
-                                pass
+                                if Attboard.counter == 0:
+                                    Attboard.counter = 3
+                                else: 
+                                    Attboard.counter -= 1
                             elif event.key == pygame.K_DOWN:
-                                pass
+                                if Attboard.counter == 3:
+                                    Attboard.counter = 0
+                                else: 
+                                    Attboard.counter += 1
                             elif event.key == pygame.K_RETURN:
-                                pass
+                                Player, Enemy = selattack(Attboard.counter+1, Player, Enemy)
+                                Enemy, Player = selattack(random.randint(1,4), Enemy, Player)
+            if Player.PH <= 0 :
+                momfight = False
+                won = False
+            elif Enemy.PH <= 0:
+                momfight = False
+                won = True
             pygame.display.flip()
             clock.tick(60)
             if ticker == 60:
