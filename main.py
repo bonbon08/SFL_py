@@ -14,6 +14,7 @@ class Player():
             exit()
         self.PC = CharacterClass
         self.PH = 100
+        self.MaxPH = 100
         self.level = 1
         self.xp = 0
         self.idle_image1 = idle_image1
@@ -28,7 +29,7 @@ class Player():
         self.Y = 400
         self.Attacknames = Attacknames
 
-class Enemy():
+class Enemyclass():
     def __init__(self, CharacterClass, maxHP, idle_image1, idle_image2):
         if not checkOk(CharacterClass):
             exit()
@@ -157,6 +158,7 @@ if __name__=="__main__":
     startscreen = True
     selectchar = True
     momfight = False
+    ausw = False
     running = True
     objektX = 220
     objekt_show = False
@@ -244,7 +246,7 @@ if __name__=="__main__":
                             sword_image = plant_sword
                             special_image = grassball
                         Player = Player(klasse, idle_image1, idle_image2, ball1_image, ball2_image, ball3_image, sword_image, special_image, Attacknames)
-                        Enemy = Enemy("fire", 60, lama_idle_1, lama_idle_2)
+                        Enemy = Enemyclass("fire", 60, lama_idle_1, lama_idle_2)
                         pygame.mixer.music.load("data/sound/fightmusicloop.wav")
                         pygame.mixer.music.play(-1,0.0)
             pygame.draw.rect(screen, (100,255,0), (charselecterstringcords[charselectervar], 300, 128, 128))
@@ -441,9 +443,32 @@ if __name__=="__main__":
             if Player.PH < 1 :
                 momfight = False
                 won = False
+                ausw = True
+                Player.PH = Player.MaxPH
+                Player.level = 1
             elif Enemy.PH < 1:
                 momfight = False
                 won = True
+                ausw = True
+                Player = gamecheck(Player, Enemy)
+                Player.PH = Player.MaxPH*Player.level*0.8
+        elif ausw:
+            screen.fill((0,0,0))
+            if won == True:
+                text = my_font.render("You won Press return for next round", False , (255, 255, 255))
+            else:
+                text = my_font.render("You lost Press return to try again")
+            screen.blit(text, (250,250))
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        ausw = False
+                        Enemy = Enemyclass(random.choice(["fire", "water", "plant"]), int(Player.PH*0.9), lama_idle_1, lama_idle_2)
+                        momfight = True
+            pygame.display.flip()
+            clock.tick(60)
         else:
             screen.blit(arena1_background, (0,0))
             for event in pygame.event.get():
